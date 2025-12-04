@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Management API Documentation</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        h1 {
+            margin: 0;
+            font-size: 2.5em;
+        }
+        .subtitle {
+            opacity: 0.9;
+            margin-top: 10px;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h2 {
+            color: #667eea;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        h3 {
+            color: #764ba2;
+            margin-top: 25px;
+        }
+        .endpoint {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        .method {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.9em;
+            margin-right: 10px;
+        }
+        .get { background: #61affe; color: white; }
+        .post { background: #49cc90; color: white; }
+        .put { background: #fca130; color: white; }
+        .delete { background: #f93e3e; color: white; }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        pre code {
+            background: none;
+            color: inherit;
+        }
+        .property {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .property-name {
+            font-weight: bold;
+            color: #667eea;
+        }
+        .property-type {
+            color: #999;
+            font-style: italic;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #667eea;
+            color: white;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        .status-code {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        .status-200 { background: #d4edda; color: #155724; }
+        .status-201 { background: #d4edda; color: #155724; }
+        .status-204 { background: #d4edda; color: #155724; }
+        .status-400 { background: #f8d7da; color: #721c24; }
+        .status-404 { background: #f8d7da; color: #721c24; }
+        .status-500 { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Event Management API</h1>
+        <p class="subtitle">FastAPI-based REST API for managing events on AWS</p>
+    </header>
+
+    <div class="container">
+        <h2>Overview</h2>
+        <p>This API provides a complete CRUD interface for managing events. It's built with FastAPI and deployed on AWS using serverless architecture (Lambda + API Gateway + DynamoDB).</p>
+        
+        <h3>Base URL</h3>
+        <code>https://ivtbuugyh1.execute-api.us-west-2.amazonaws.com/prod/</code>
+        
+        <h3>Features</h3>
+        <ul>
+            <li>Create, Read, Update, and Delete events</li>
+            <li>Filter events by status</li>
+            <li>Comprehensive input validation</li>
+            <li>CORS enabled for web access</li>
+            <li>Proper error handling with HTTP status codes</li>
+        </ul>
+    </div>
+
+    <div class="container">
+        <h2>Event Schema</h2>
+        <p>Each event contains the following properties:</p>
+        
+        <div class="property">
+            <span class="property-name">eventId</span>
+            <span class="property-type">(string)</span>
+            <p>Unique identifier for the event. Can be provided during creation or auto-generated.</p>
+        </div>
+        
+        <div class="property">
+            <span class="property-name">title</span>
+            <span class="property-type">(string, required)</span>
+            <p>Event title. Length: 1-200 characters.</p>
+        </div>
+        
+        <div class="property">
+            <span class="property-name">description</span>
+            <span class="property-type">(string, required)</span>
+            <p>Event description. Length: 1-2000 characters.</p>
+        </div>
+        
+        <div class="property">
+            <span class="property-name">date</span>
+            <span class="property-type">(string, required)</span>
+            <p>Event date in ISO format. Examples: "2024-12-25T10:00:00Z" or "2024-12-25"</p>
+        </div>
+        
+        <div class="property">
+            <span class="property-name">location</span>
+            <span class="property-type">(string, required)</span>
+            <p>Event location. Length: 1-200 characters.</p>
+        </div>
+        
+        <div class="property">
+            <span class="property-name">capacity</span>
+            <span class="property-type">(integer, required)</span>
+            <p>Maximum number of attendees. Range: 1-100000.</p>
+        </div>
+        
+        <div class="property">
+            <span class="property-name">organizer</span>
+            <span class="property-type">(string, required)</span>
+            <p>Event organizer name. Length: 1-200 characters.</p>
+        </div>
+        
+        <div class="property">
+            <span class="property-name">status</span>
+            <span class="property-type">(string, required)</span>
+            <p>Event status. Allowed values: <code>draft</code>, <code>published</code>, <code>cancelled</code>, <code>completed</code>, <code>active</code></p>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>API Endpoints</h2>
+        
+        <div class="endpoint">
+            <h3><span class="method get">GET</span> /events</h3>
+            <p><strong>Description:</strong> Retrieve a list of all events.</p>
+            <p><strong>Query Parameters:</strong></p>
+            <ul>
+                <li><code>status</code> (optional) - Filter events by status (e.g., <code>?status=active</code>)</li>
+            </ul>
+            <p><strong>Response:</strong> <span class="status-code status-200">200 OK</span></p>
+            <pre><code>[
+  {
+    "eventId": "123e4567-e89b-12d3-a456-426614174000",
+    "title": "Tech Conference 2024",
+    "description": "Annual technology conference",
+    "date": "2024-12-25T10:00:00Z",
+    "location": "Tokyo Convention Center",
+    "capacity": 500,
+    "organizer": "Tech Events Inc",
+    "status": "published"
+  }
+]</code></pre>
+        </div>
+
+        <div class="endpoint">
+            <h3><span class="method post">POST</span> /events</h3>
+            <p><strong>Description:</strong> Create a new event.</p>
+            <p><strong>Request Body:</strong></p>
+            <pre><code>{
+  "eventId": "optional-custom-id",
+  "title": "Tech Conference 2024",
+  "description": "Annual technology conference",
+  "date": "2024-12-25T10:00:00Z",
+  "location": "Tokyo Convention Center",
+  "capacity": 500,
+  "organizer": "Tech Events Inc",
+  "status": "published"
+}</code></pre>
+            <p><strong>Response:</strong> <span class="status-code status-201">201 Created</span></p>
+            <p><strong>Note:</strong> The <code>eventId</code> field is optional. If not provided, a UUID will be generated automatically.</p>
+        </div>
+
+        <div class="endpoint">
+            <h3><span class="method get">GET</span> /events/{eventId}</h3>
+            <p><strong>Description:</strong> Retrieve a specific event by ID.</p>
+            <p><strong>Path Parameters:</strong></p>
+            <ul>
+                <li><code>eventId</code> - The unique identifier of the event</li>
+            </ul>
+            <p><strong>Responses:</strong></p>
+            <ul>
+                <li><span class="status-code status-200">200 OK</span> - Event found and returned</li>
+                <li><span class="status-code status-404">404 Not Found</span> - Event does not exist</li>
+            </ul>
+        </div>
+
+        <div class="endpoint">
+            <h3><span class="method put">PUT</span> /events/{eventId}</h3>
+            <p><strong>Description:</strong> Update an existing event.</p>
+            <p><strong>Path Parameters:</strong></p>
+            <ul>
+                <li><code>eventId</code> - The unique identifier of the event</li>
+            </ul>
+            <p><strong>Request Body:</strong> (all fields optional)</p>
+            <pre><code>{
+  "title": "Updated Conference Title",
+  "capacity": 600
+}</code></pre>
+            <p><strong>Responses:</strong></p>
+            <ul>
+                <li><span class="status-code status-200">200 OK</span> - Event updated successfully</li>
+                <li><span class="status-code status-404">404 Not Found</span> - Event does not exist</li>
+                <li><span class="status-code status-400">400 Bad Request</span> - No fields to update</li>
+            </ul>
+        </div>
+
+        <div class="endpoint">
+            <h3><span class="method delete">DELETE</span> /events/{eventId}</h3>
+            <p><strong>Description:</strong> Delete an event.</p>
+            <p><strong>Path Parameters:</strong></p>
+            <ul>
+                <li><code>eventId</code> - The unique identifier of the event</li>
+            </ul>
+            <p><strong>Responses:</strong></p>
+            <ul>
+                <li><span class="status-code status-204">204 No Content</span> - Event deleted successfully</li>
+                <li><span class="status-code status-404">404 Not Found</span> - Event does not exist</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Error Responses</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Status Code</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="status-code status-400">400</span></td>
+                    <td>Bad Request - Invalid input data or validation error</td>
+                </tr>
+                <tr>
+                    <td><span class="status-code status-404">404</span></td>
+                    <td>Not Found - The requested resource does not exist</td>
+                </tr>
+                <tr>
+                    <td><span class="status-code status-500">500</span></td>
+                    <td>Internal Server Error - An unexpected error occurred</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <h3>Error Response Format</h3>
+        <pre><code>{
+  "detail": "Error message describing what went wrong"
+}</code></pre>
+    </div>
+
+    <div class="container">
+        <h2>Module Documentation</h2>
+        
+        <h3>main.py</h3>
+        <p>The main application module containing the FastAPI application and all API endpoints.</p>
+        
+        <h4>Classes</h4>
+        
+        <div class="property">
+            <span class="property-name">EventBase</span>
+            <p>Base Pydantic model for event data with validation rules.</p>
+            <p><strong>Validators:</strong></p>
+            <ul>
+                <li><code>validate_date</code> - Validates date format (ISO or YYYY-MM-DD)</li>
+            </ul>
+        </div>
+        
+        <div class="property">
+            <span class="property-name">EventCreate</span>
+            <p>Model for creating new events. Extends EventBase with optional eventId field.</p>
+        </div>
+        
+        <div class="property">
+            <span class="property-name">EventUpdate</span>
+            <p>Model for updating events. All fields are optional.</p>
+        </div>
+        
+        <div class="property">
+            <span class="property-name">Event</span>
+            <p>Complete event model including eventId. Used for API responses.</p>
+        </div>
+        
+        <h4>Functions</h4>
+        
+        <div class="property">
+            <span class="property-name">create_event(event: EventCreate)</span>
+            <p>Creates a new event in DynamoDB. Generates UUID if eventId not provided.</p>
+            <p><strong>Returns:</strong> Event object with 201 status</p>
+        </div>
+        
+        <div class="property">
+            <span class="property-name">list_events(status: Optional[str])</span>
+            <p>Lists all events, optionally filtered by status parameter.</p>
+            <p><strong>Returns:</strong> List of Event objects</p>
+        </div>
+        
+        <div class="property">
+            <span class="property-name">get_event(event_id: str)</span>
+            <p>Retrieves a single event by ID.</p>
+            <p><strong>Returns:</strong> Event object or 404 error</p>
+        </div>
+        
+        <div class="property">
+            <span class="property-name">update_event(event_id: str, event_update: EventUpdate)</span>
+            <p>Updates an existing event with provided fields.</p>
+            <p><strong>Returns:</strong> Updated Event object or 404 error</p>
+        </div>
+        
+        <div class="property">
+            <span class="property-name">delete_event(event_id: str)</span>
+            <p>Deletes an event by ID.</p>
+            <p><strong>Returns:</strong> 204 No Content or 404 error</p>
+        </div>
+        
+        <h4>Configuration</h4>
+        <ul>
+            <li><strong>CORS:</strong> Enabled for all origins, methods, and headers</li>
+            <li><strong>DynamoDB Table:</strong> Configured via EVENTS_TABLE_NAME environment variable</li>
+            <li><strong>Lambda Handler:</strong> Mangum adapter for AWS Lambda integration</li>
+        </ul>
+    </div>
+
+    <div class="container">
+        <h2>Deployment</h2>
+        <p>This API is deployed on AWS using the following services:</p>
+        <ul>
+            <li><strong>AWS Lambda:</strong> Runs the FastAPI application</li>
+            <li><strong>API Gateway:</strong> Provides HTTP endpoints and routing</li>
+            <li><strong>DynamoDB:</strong> NoSQL database for event storage</li>
+        </ul>
+        <p>Deployment is managed using AWS CDK. See the <code>infrastructure/</code> directory for configuration details.</p>
+    </div>
+
+    <footer style="text-align: center; margin-top: 40px; padding: 20px; color: #666;">
+        <p>Event Management API Documentation</p>
+        <p>Generated: December 2025</p>
+    </footer>
+</body>
+</html>

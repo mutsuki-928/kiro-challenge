@@ -29,6 +29,37 @@ class MainStack(Stack):
             point_in_time_recovery=True,
         )
         
+        # DynamoDB Table for Registration System (single-table design)
+        registration_table = dynamodb.Table(
+            self,
+            "RegistrationTable",
+            partition_key=dynamodb.Attribute(
+                name="PK",
+                type=dynamodb.AttributeType.STRING
+            ),
+            sort_key=dynamodb.Attribute(
+                name="SK",
+                type=dynamodb.AttributeType.STRING
+            ),
+            billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
+            removal_policy=RemovalPolicy.DESTROY,  # For development - change for production
+            point_in_time_recovery=True,
+        )
+        
+        # Add GSI for querying by user
+        registration_table.add_global_secondary_index(
+            index_name="GSI1",
+            partition_key=dynamodb.Attribute(
+                name="GSI1PK",
+                type=dynamodb.AttributeType.STRING
+            ),
+            sort_key=dynamodb.Attribute(
+                name="GSI1SK",
+                type=dynamodb.AttributeType.STRING
+            ),
+            projection_type=dynamodb.ProjectionType.ALL,
+        )
+        
         # Lambda Function with bundled dependencies
         api_lambda = lambda_.Function(
             self,
@@ -42,12 +73,14 @@ class MainStack(Stack):
                     "command": [
                         "bash", "-c",
                         "pip install -r requirements.txt -t /asset-output && " +
-                        "cp -r *.py /asset-output/"
+                        "cp -r *.py /asset-output/ && " +
+                        "cp -r registration /asset-output/"
                     ],
                 }
             ),
             environment={
                 "EVENTS_TABLE_NAME": events_table.table_name,
+                "REGISTRATION_TABLE_NAME": registration_table.table_name,
             },
             timeout=Duration.seconds(30),
             memory_size=512,
@@ -55,6 +88,7 @@ class MainStack(Stack):
         
         # Grant Lambda permissions to access DynamoDB
         events_table.grant_read_write_data(api_lambda)
+        registration_table.grant_read_write_data(api_lambda)
         
         # API Gateway REST API
         api = apigateway.RestApi(
@@ -110,4 +144,12 @@ class MainStack(Stack):
             value=api_lambda.function_name,
             description="Lambda Function Name",
             export_name="EventApiFunctionName"
+        )
+        
+        CfnOutput(
+            self,
+            "RegistrationTableName",
+            value=registration_table.table_name,
+            description="DynamoDB Registration Table Name",
+            export_name="RegistrationTableName"
         )

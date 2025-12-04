@@ -21,11 +21,13 @@ A full-stack event management system built with FastAPI and deployed on AWS usin
 ## Features
 
 - **RESTful API**: Complete CRUD operations for event management
+- **User Registration System**: Manage user registrations with capacity constraints and waitlists
 - **Serverless Architecture**: Deployed on AWS Lambda with API Gateway
-- **NoSQL Database**: DynamoDB for scalable data storage
+- **NoSQL Database**: DynamoDB for scalable data storage with single-table design
 - **Input Validation**: Comprehensive validation using Pydantic
 - **CORS Support**: Configured for web application access
 - **Infrastructure as Code**: AWS CDK for reproducible deployments
+- **Property-Based Testing**: Hypothesis for comprehensive correctness validation
 
 ## Quick Start
 
@@ -87,11 +89,21 @@ The deployment will output the API Gateway URL for accessing your deployed API.
 
 ### Endpoints
 
+#### Event Management
 - `GET /events` - List all events (supports `?status=active` filter)
 - `POST /events` - Create a new event
 - `GET /events/{id}` - Get event by ID
 - `PUT /events/{id}` - Update event
 - `DELETE /events/{id}` - Delete event
+
+#### User Registration
+- `POST /users` - Create a new user
+- `GET /users/{user_id}` - Get user by ID
+- `POST /events/{event_id}/registrations` - Register user for event
+- `GET /events/{event_id}/registrations` - Get registered users for event
+- `DELETE /events/{event_id}/registrations/{user_id}` - Unregister user from event
+- `GET /users/{user_id}/registrations` - Get user's registered events
+- `GET /users/{user_id}/waitlists` - Get user's waitlisted events
 
 For detailed API documentation, see:
 - [Backend README](backend/README.md)
@@ -99,18 +111,22 @@ For detailed API documentation, see:
 
 ### Example Usage
 
+#### Event Management
+
 Create an event:
 ```bash
 curl -X POST https://ivtbuugyh1.execute-api.us-west-2.amazonaws.com/prod/events \
   -H "Content-Type: application/json" \
   -d '{
+    "eventId": "event-123",
     "title": "Tech Conference 2024",
     "description": "Annual technology conference",
-    "date": "2024-12-25T10:00:00Z",
+    "date": "2024-12-25",
     "location": "Tokyo Convention Center",
-    "capacity": 500,
+    "capacity": 100,
     "organizer": "Tech Events Inc",
-    "status": "published"
+    "status": "active",
+    "waitlistEnabled": true
   }'
 ```
 
@@ -119,9 +135,30 @@ List all events:
 curl https://ivtbuugyh1.execute-api.us-west-2.amazonaws.com/prod/events
 ```
 
-Filter by status:
+#### User Registration
+
+Create a user:
 ```bash
-curl https://ivtbuugyh1.execute-api.us-west-2.amazonaws.com/prod/events?status=active
+curl -X POST https://ivtbuugyh1.execute-api.us-west-2.amazonaws.com/prod/users \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": "user-123",
+    "name": "John Doe"
+  }'
+```
+
+Register user for event:
+```bash
+curl -X POST https://ivtbuugyh1.execute-api.us-west-2.amazonaws.com/prod/events/event-123/registrations \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": "user-123"
+  }'
+```
+
+Get user's registrations:
+```bash
+curl https://ivtbuugyh1.execute-api.us-west-2.amazonaws.com/prod/users/user-123/registrations
 ```
 
 ## AWS Architecture
@@ -153,10 +190,11 @@ curl https://ivtbuugyh1.execute-api.us-west-2.amazonaws.com/prod/events?status=a
 └────────┬────────┘
          │
          ▼
-┌─────────────────┐
-│  DynamoDB       │
-│  (Events Table) │
-└─────────────────┘
+┌─────────────────────────────────┐
+│  DynamoDB                       │
+│  - Events Table                 │
+│  - Registration Table (GSI)     │
+└─────────────────────────────────┘
 ```
 
 ## Technology Stack
@@ -166,6 +204,8 @@ curl https://ivtbuugyh1.execute-api.us-west-2.amazonaws.com/prod/events?status=a
 - **Pydantic** - Data validation using Python type annotations
 - **Boto3** - AWS SDK for Python
 - **Mangum** - ASGI adapter for AWS Lambda
+- **Hypothesis** - Property-based testing framework
+- **Pytest** - Testing framework
 
 ### Infrastructure
 - **AWS CDK** - Infrastructure as Code framework
@@ -198,6 +238,7 @@ mypy .
 ### Backend
 
 - `EVENTS_TABLE_NAME` - DynamoDB table name for events (set automatically in Lambda)
+- `REGISTRATION_TABLE_NAME` - DynamoDB table name for registration system (set automatically in Lambda)
 
 ### Infrastructure
 

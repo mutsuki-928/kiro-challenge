@@ -9,8 +9,14 @@ import boto3
 from boto3.dynamodb.conditions import Key, Attr
 from mangum import Mangum
 
+# Import registration router
+from registration.api import router as registration_router
+
 # Initialize FastAPI app
 app = FastAPI(title="Event Management API", version="1.0.0")
+
+# Include registration router
+app.include_router(registration_router)
 
 # Configure CORS
 app.add_middleware(

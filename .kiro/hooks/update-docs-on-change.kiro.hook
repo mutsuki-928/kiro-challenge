@@ -2,11 +2,11 @@
   "name": "Update Docs on Source Change",
   "description": "Automatically updates documentation when source code files are modified",
   "trigger": {
-    "type": "onFileSave",
+    "type": "fileEdited",
     "filePattern": "**/*.{py,ts,js,tsx,jsx}"
   },
   "action": {
-    "type": "sendMessage",
+    "type": "askAgent",
     "message": "A source code file has been modified: {{filePath}}. Please review the changes and update any relevant documentation files (README.md, backend/README.md, API documentation, etc.) to reflect the changes. Focus on:\n\n1. API endpoint changes\n2. New features or functionality\n3. Configuration changes\n4. Dependency updates\n5. Architecture changes\n\nOnly update documentation if the changes are significant and user-facing."
   },
   "enabled": true
